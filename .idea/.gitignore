@@ -6,3 +6,7 @@
 # Datasource local storage ignored files
 /dataSources/
 /dataSources.local.xml
+# Axon Server Data
+../axonserver-config
+../axonserver-data
+../axonserver-events

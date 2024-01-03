@@ -1,0 +1,16 @@
+version: '3'
+services:
+  axonserver:
+    image: axoniq/axonserver
+    container_name: axonserver
+    ports:
+      - "8024:8024" # HTTPポート
+      - "8124:8124" # gRPCポート
+    volumes:
+      - "./axonserver-data:/data" # データディレクトリをボリュームとしてマウント
+      - "./axonserver-events:/eventdata" # イベントデータディレクトリをボリュームとしてマウント
+      - "./axonserver-config:/config" # コンフィグディレクトリをボリュームとしてマウント
+    environment:
+      - AXONIQ_AXONSERVER_NAME=axonserver # インスタンス名を設定
+      - AXONIQ_AXONSERVER_HOSTNAME=localhost # ホスト名を設定
+      - AXONIQ_AXONSERVER_DEVMODE_ENABLED=true
