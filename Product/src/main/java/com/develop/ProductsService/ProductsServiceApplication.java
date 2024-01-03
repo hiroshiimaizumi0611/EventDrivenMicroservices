@@ -1,13 +1,13 @@
-package com.develop.Product;
+package com.develop.ProductsService;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class ProductApplication {
+public class ProductsServiceApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(ProductApplication.class, args);
+		SpringApplication.run(ProductsServiceApplication.class, args);
 	}
 
 }
