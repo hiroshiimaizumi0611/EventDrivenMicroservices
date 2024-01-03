@@ -1,10 +1,18 @@
 package com.develop.ProductsService.rest;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/products")
 public class ProductsController {
+
+    private final Environment env;
+
+    public ProductsController(Environment env) {
+        this.env = env;
+    }
 
     @PostMapping
     public String createProduct() {
@@ -13,7 +21,7 @@ public class ProductsController {
 
     @GetMapping
     public String getProduct() {
-        return "HTTP GET Handled";
+        return "HTTP GET Handled : " + env.getProperty("local.server.port");
     }
 
     @PutMapping
