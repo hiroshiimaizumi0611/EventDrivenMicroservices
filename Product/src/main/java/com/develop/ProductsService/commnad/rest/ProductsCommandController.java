@@ -37,19 +37,4 @@ public class ProductsCommandController {
             return ex.getLocalizedMessage();
         }
     }
-
-    @GetMapping
-    public String getProduct() {
-        return "HTTP GET Handled : " + env.getProperty("local.server.port");
-    }
-
-    @PutMapping
-    public String updateProduct() {
-        return "HTTP PUT Handled";
-    }
-
-    @DeleteMapping
-    public String deleteProduct() {
-        return "HTTP DELETE Handled";
-    }
 }
