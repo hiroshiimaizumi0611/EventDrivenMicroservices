@@ -14,3 +14,4 @@ services:
       - AXONIQ_AXONSERVER_NAME=axonserver # インスタンス名を設定
       - AXONIQ_AXONSERVER_HOSTNAME=localhost # ホスト名を設定
       - AXONIQ_AXONSERVER_DEVMODE_ENABLED=true
+      - AXONIQ_AXONSERVER_STANDALONE=true

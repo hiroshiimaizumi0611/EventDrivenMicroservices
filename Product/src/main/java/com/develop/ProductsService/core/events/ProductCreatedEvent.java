@@ -1,10 +1,9 @@
 package com.develop.ProductsService.core.events;
 
-import lombok.Getter;
-
+import lombok.Data;
 import java.math.BigDecimal;
 
-@Getter
+@Data
 public class ProductCreatedEvent {
     private String productId;
     private String title;

@@ -1,13 +1,13 @@
 package com.develop.ProductsService.commnad;
 
 import lombok.Builder;
-import lombok.Getter;
+import lombok.Data;
 import org.axonframework.modelling.command.TargetAggregateIdentifier;
 
 import java.math.BigDecimal;
 
 @Builder
-@Getter
+@Data
 public class CreateProductCommand {
     @TargetAggregateIdentifier
     private final String productId;
