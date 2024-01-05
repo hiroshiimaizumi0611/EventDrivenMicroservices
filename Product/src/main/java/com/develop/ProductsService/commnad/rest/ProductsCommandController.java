@@ -1,4 +1,4 @@
-package com.develop.ProductsService.rest;
+package com.develop.ProductsService.commnad.rest;
 
 import com.develop.ProductsService.commnad.CreateProductCommand;
 import org.axonframework.commandhandling.gateway.CommandGateway;
@@ -10,13 +10,13 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/products")
-public class ProductsController {
+public class ProductsCommandController {
 
     private final Environment env;
     private final CommandGateway commandGateway;
 
     @Autowired
-    public ProductsController(Environment env, CommandGateway commandGateway) {
+    public ProductsCommandController(Environment env, CommandGateway commandGateway) {
         this.env = env;
         this.commandGateway = commandGateway;
     }

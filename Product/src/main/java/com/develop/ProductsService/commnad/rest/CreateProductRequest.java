@@ -1,4 +1,4 @@
-package com.develop.ProductsService.rest;
+package com.develop.ProductsService.commnad.rest;
 
 import lombok.Getter;
 
