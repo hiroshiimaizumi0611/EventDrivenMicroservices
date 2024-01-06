@@ -1,6 +1,7 @@
 package com.develop.ProductsService.commnad.rest;
 
 import com.develop.ProductsService.commnad.CreateProductCommand;
+import jakarta.validation.Valid;
 import org.axonframework.commandhandling.gateway.CommandGateway;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
@@ -22,7 +23,7 @@ public class ProductsCommandController {
     }
 
     @PostMapping
-    public String createProduct(@RequestBody CreateProductRequest request) {
+    public String createProduct(@Valid @RequestBody CreateProductRequest request) {
 
         CreateProductCommand command = CreateProductCommand.builder()
                 .title(request.getTitle())
