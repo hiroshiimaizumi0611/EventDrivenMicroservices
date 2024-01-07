@@ -32,10 +32,6 @@ public class ProductsCommandController {
                 .productId(UUID.randomUUID().toString())
                 .build();
 
-        try {
             return commandGateway.sendAndWait(command);
-        } catch (Exception ex) {
-            return ex.getLocalizedMessage();
-        }
     }
 }
