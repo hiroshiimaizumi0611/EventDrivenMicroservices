@@ -1,6 +1,8 @@
 package com.develop.ProductsService.commnad.interceptors;
 
 import com.develop.ProductsService.commnad.CreateProductCommand;
+import com.develop.ProductsService.core.data.ProductLookupEntity;
+import com.develop.ProductsService.core.data.ProductLookupRepository;
 import org.axonframework.commandhandling.CommandMessage;
 import org.axonframework.messaging.MessageDispatchInterceptor;
 import org.slf4j.Logger;
@@ -16,6 +18,11 @@ import java.util.function.BiFunction;
 public class CreateProductCommandInterceptor implements MessageDispatchInterceptor<CommandMessage<?>> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CreateProductCommandInterceptor.class);
+    private final ProductLookupRepository productLookupRepository;
+
+    public CreateProductCommandInterceptor(ProductLookupRepository productLookupRepository) {
+        this.productLookupRepository = productLookupRepository;
+    }
 
     @Nonnull
     @Override
@@ -34,6 +41,15 @@ public class CreateProductCommandInterceptor implements MessageDispatchIntercept
 
                 if (createProductCommand.getTitle() == null || createProductCommand.getTitle().isBlank()) {
                     throw new IllegalArgumentException("Title cannot be empty.");
+                }
+
+                ProductLookupEntity entity = productLookupRepository.findByProductIdOrTitle(createProductCommand.getProductId(), createProductCommand.getTitle());
+
+                if (entity != null) {
+                    throw new IllegalStateException(
+                            String.format("Product with productId %s or title %s already exist",
+                                    createProductCommand.getProductId(), createProductCommand.getTitle())
+                    );
                 }
             }
 
