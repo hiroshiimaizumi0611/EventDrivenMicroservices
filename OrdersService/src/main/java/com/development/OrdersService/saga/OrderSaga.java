@@ -1,6 +1,7 @@
 package com.development.OrdersService.saga;
 
 import com.development.OrdersService.core.events.OrderCreatedEvent;
+import com.development.core.commands.ProcessPaymentCommand;
 import com.development.core.commands.ReserveProductCommand;
 import com.development.core.events.ProductReserveEvent;
 import com.development.core.models.User;
@@ -19,6 +20,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.Nonnull;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 @Saga
 public class OrderSaga {
@@ -78,5 +81,25 @@ public class OrderSaga {
         }
 
         LOGGER.info("Successfully fetched user payment details for user " + user.getFirstName());
+
+        ProcessPaymentCommand command = ProcessPaymentCommand.builder()
+                .orderId(event.getOrderId())
+                .paymentDetails(user.getPaymentDetails())
+                .paymentId(UUID.randomUUID().toString())
+                .build();
+
+        String result = null;
+
+        try {
+            result = commandGateway.sendAndWait(command, 10, TimeUnit.SECONDS);
+        } catch (Exception ex) {
+            LOGGER.error(ex.getMessage());
+            // Start compensating transaction
+        }
+
+        if (result == null) {
+            LOGGER.info("The ProcessPaymentCommand resulted in NUll. Initiating a compensating transaction.");
+            // Start compensating transaction
+        }
     }
 }
