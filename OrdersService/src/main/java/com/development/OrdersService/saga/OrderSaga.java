@@ -1,8 +1,11 @@
 package com.development.OrdersService.saga;
 
+import com.development.OrdersService.command.ApproveOrderCommand;
+import com.development.OrdersService.core.events.OrderApprovedEvent;
 import com.development.OrdersService.core.events.OrderCreatedEvent;
 import com.development.core.commands.ProcessPaymentCommand;
 import com.development.core.commands.ReserveProductCommand;
+import com.development.core.events.PaymentProcessedEvent;
 import com.development.core.events.ProductReserveEvent;
 import com.development.core.models.User;
 import com.development.core.query.FetchUserPaymentDetailsQuery;
@@ -11,6 +14,7 @@ import org.axonframework.commandhandling.CommandMessage;
 import org.axonframework.commandhandling.CommandResultMessage;
 import org.axonframework.commandhandling.gateway.CommandGateway;
 import org.axonframework.messaging.responsetypes.ResponseTypes;
+import org.axonframework.modelling.saga.EndSaga;
 import org.axonframework.modelling.saga.SagaEventHandler;
 import org.axonframework.modelling.saga.StartSaga;
 import org.axonframework.queryhandling.QueryGateway;
@@ -101,5 +105,17 @@ public class OrderSaga {
             LOGGER.info("The ProcessPaymentCommand resulted in NUll. Initiating a compensating transaction.");
             // Start compensating transaction
         }
+    }
+
+    @SagaEventHandler(associationProperty = "orderId")
+    public void handle(PaymentProcessedEvent event) {
+        ApproveOrderCommand command = new ApproveOrderCommand(event.getOrderId());
+        commandGateway.send(command);
+    }
+
+    @EndSaga
+    @SagaEventHandler(associationProperty = "orderId")
+    public void handle(OrderApprovedEvent event) {
+        LOGGER.info("Order is approved. Order Saga is complete for orderId: " + event.getOrderId());
     }
 }

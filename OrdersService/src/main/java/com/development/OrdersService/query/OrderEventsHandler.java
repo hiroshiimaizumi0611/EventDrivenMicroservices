@@ -2,6 +2,7 @@ package com.development.OrdersService.query;
 
 import com.development.OrdersService.core.data.OrderEntity;
 import com.development.OrdersService.core.data.OrdersRepository;
+import com.development.OrdersService.core.events.OrderApprovedEvent;
 import com.development.OrdersService.core.events.OrderCreatedEvent;
 import org.axonframework.eventhandling.EventHandler;
 import org.springframework.beans.BeanUtils;
@@ -21,6 +22,21 @@ public class OrderEventsHandler {
 
         OrderEntity entity = new OrderEntity();
         BeanUtils.copyProperties(event, entity);
+
+        ordersRepository.save(entity);
+    }
+
+    @EventHandler
+    public void on(OrderApprovedEvent event) {
+
+        OrderEntity entity = ordersRepository.findByOrderId(event.getOrderId());
+
+        if (entity == null) {
+            // TODO: Do something about it.
+            return;
+        }
+
+        entity.setOrderStatus(event.getOrderStatus());
 
         ordersRepository.save(entity);
     }
