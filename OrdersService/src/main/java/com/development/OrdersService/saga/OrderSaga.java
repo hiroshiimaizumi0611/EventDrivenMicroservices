@@ -3,6 +3,7 @@ package com.development.OrdersService.saga;
 import com.development.OrdersService.command.ApproveOrderCommand;
 import com.development.OrdersService.core.events.OrderApprovedEvent;
 import com.development.OrdersService.core.events.OrderCreatedEvent;
+import com.development.core.commands.CancelProductReservationCommand;
 import com.development.core.commands.ProcessPaymentCommand;
 import com.development.core.commands.ReserveProductCommand;
 import com.development.core.events.PaymentProcessedEvent;
@@ -21,7 +22,6 @@ import org.axonframework.queryhandling.QueryGateway;
 import org.axonframework.spring.stereotype.Saga;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.Nonnull;
 import java.util.UUID;
@@ -30,13 +30,16 @@ import java.util.concurrent.TimeUnit;
 @Saga
 public class OrderSaga {
 
-    @Autowired
-    private transient CommandGateway commandGateway;
+    private final transient CommandGateway commandGateway;
 
-    @Autowired
-    private transient QueryGateway queryGateway;
+    private final transient QueryGateway queryGateway;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OrderSaga.class);
+
+    public OrderSaga(CommandGateway commandGateway, QueryGateway queryGateway) {
+        this.commandGateway = commandGateway;
+        this.queryGateway = queryGateway;
+    }
 
     @StartSaga
     @SagaEventHandler(associationProperty = "orderId")
@@ -75,12 +78,12 @@ public class OrderSaga {
             user = queryGateway.query(query, ResponseTypes.instanceOf(User.class)).join();
         } catch (Exception ex) {
             LOGGER.error(ex.getMessage());
-            // Start compensating transaction
+            cancelProductReservation(event, ex.getMessage());
             return;
         }
 
         if (user == null) {
-            // Start compensating transaction
+            cancelProductReservation(event, "Could not fetch user payment details.");
             return;
         }
 
@@ -98,13 +101,26 @@ public class OrderSaga {
             result = commandGateway.sendAndWait(command, 10, TimeUnit.SECONDS);
         } catch (Exception ex) {
             LOGGER.error(ex.getMessage());
-            // Start compensating transaction
+            cancelProductReservation(event, ex.getMessage());
+            return;
         }
 
         if (result == null) {
             LOGGER.info("The ProcessPaymentCommand resulted in NUll. Initiating a compensating transaction.");
-            // Start compensating transaction
+            cancelProductReservation(event, "Could not process user payment with provided payment details.");
         }
+    }
+
+    private void cancelProductReservation(ProductReserveEvent event, String reason) {
+        CancelProductReservationCommand command = CancelProductReservationCommand.builder()
+                .orderId(event.getOrderId())
+                .productId(event.getProductId())
+                .quantity(event.getQuantity())
+                .userId(event.getUserId())
+                .reason(reason)
+                .build();
+
+        commandGateway.send(command);
     }
 
     @SagaEventHandler(associationProperty = "orderId")

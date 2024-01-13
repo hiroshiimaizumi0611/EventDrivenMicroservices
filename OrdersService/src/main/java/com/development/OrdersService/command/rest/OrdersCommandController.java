@@ -5,12 +5,10 @@ import com.development.OrdersService.command.OrderStatus;
 import jakarta.validation.Valid;
 import org.axonframework.commandhandling.gateway.CommandGateway;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.env.Environment;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
 
 import java.util.UUID;
 
@@ -18,12 +16,10 @@ import java.util.UUID;
 @RequestMapping("/orders")
 public class OrdersCommandController {
 
-    private final Environment env;
     private final CommandGateway commandGateway;
 
     @Autowired
-    public OrdersCommandController(Environment env, CommandGateway commandGateway) {
-        this.env = env;
+    public OrdersCommandController(CommandGateway commandGateway) {
         this.commandGateway = commandGateway;
     }
 
