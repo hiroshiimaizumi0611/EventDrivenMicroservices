@@ -1,12 +1,15 @@
 package com.development.OrdersService.saga;
 
 import com.development.OrdersService.command.ApproveOrderCommand;
+import com.development.OrdersService.command.RejectOrderCommand;
 import com.development.OrdersService.core.events.OrderApprovedEvent;
 import com.development.OrdersService.core.events.OrderCreatedEvent;
+import com.development.OrdersService.core.events.OrderRejectedEvent;
 import com.development.core.commands.CancelProductReservationCommand;
 import com.development.core.commands.ProcessPaymentCommand;
 import com.development.core.commands.ReserveProductCommand;
 import com.development.core.events.PaymentProcessedEvent;
+import com.development.core.events.ProductReservationCanceledEvent;
 import com.development.core.events.ProductReserveEvent;
 import com.development.core.models.User;
 import com.development.core.query.FetchUserPaymentDetailsQuery;
@@ -133,5 +136,19 @@ public class OrderSaga {
     @SagaEventHandler(associationProperty = "orderId")
     public void handle(OrderApprovedEvent event) {
         LOGGER.info("Order is approved. Order Saga is complete for orderId: " + event.getOrderId());
+    }
+
+    @SagaEventHandler(associationProperty = "orderId")
+    public void handle(ProductReservationCanceledEvent event) {
+        // Create and send a RejectProductCommand
+        RejectOrderCommand command = new RejectOrderCommand(event.getOrderId(), event.getReason());
+
+        commandGateway.send(command);
+    }
+
+    @EndSaga
+    @SagaEventHandler(associationProperty = "orderId")
+    public void handle(OrderRejectedEvent event) {
+        LOGGER.info("Successfully rejected order with id " + event.getOrderId());
     }
 }

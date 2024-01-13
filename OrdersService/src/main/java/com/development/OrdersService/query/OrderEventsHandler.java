@@ -4,6 +4,7 @@ import com.development.OrdersService.core.data.OrderEntity;
 import com.development.OrdersService.core.data.OrdersRepository;
 import com.development.OrdersService.core.events.OrderApprovedEvent;
 import com.development.OrdersService.core.events.OrderCreatedEvent;
+import com.development.OrdersService.core.events.OrderRejectedEvent;
 import org.axonframework.eventhandling.EventHandler;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Component;
@@ -38,6 +39,13 @@ public class OrderEventsHandler {
 
         entity.setOrderStatus(event.getOrderStatus());
 
+        ordersRepository.save(entity);
+    }
+
+    @EventHandler
+    public void on(OrderRejectedEvent event) {
+        OrderEntity entity = ordersRepository.findByOrderId(event.getOrderId());
+        entity.setOrderStatus(event.getOrderStatus());
         ordersRepository.save(entity);
     }
 }

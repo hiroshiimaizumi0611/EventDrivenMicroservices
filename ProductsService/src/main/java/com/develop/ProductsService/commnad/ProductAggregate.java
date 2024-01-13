@@ -1,7 +1,9 @@
 package com.develop.ProductsService.commnad;
 
 import com.develop.ProductsService.core.events.ProductCreatedEvent;
+import com.development.core.commands.CancelProductReservationCommand;
 import com.development.core.commands.ReserveProductCommand;
+import com.development.core.events.ProductReservationCanceledEvent;
 import com.development.core.events.ProductReserveEvent;
 import org.axonframework.commandhandling.CommandHandler;
 import org.axonframework.eventsourcing.EventSourcingHandler;
@@ -59,6 +61,19 @@ public class ProductAggregate {
         AggregateLifecycle.apply(productReservedEvent);
     }
 
+    @CommandHandler
+    public void handle(CancelProductReservationCommand command) {
+        ProductReservationCanceledEvent event = ProductReservationCanceledEvent.builder()
+                .orderId(command.getOrderId())
+                .productId(command.getProductId())
+                .quantity(command.getQuantity())
+                .reason(command.getReason())
+                .userId(command.getUserId())
+                .build();
+
+        AggregateLifecycle.apply(event);
+    }
+
     @EventSourcingHandler
     public void on(ProductCreatedEvent event) {
         this.productId = event.getProductId();
@@ -70,5 +85,10 @@ public class ProductAggregate {
     @EventSourcingHandler
     public void on(ProductReserveEvent event) {
         this.quantity -= event.getQuantity();
+    }
+
+    @EventSourcingHandler
+    public void on(CancelProductReservationCommand event) {
+        this.quantity += event.getQuantity();
     }
 }
