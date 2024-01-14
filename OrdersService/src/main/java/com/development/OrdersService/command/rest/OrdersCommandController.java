@@ -1,10 +1,14 @@
 package com.development.OrdersService.command.rest;
 
 import com.development.OrdersService.command.CreateOrderCommand;
-import com.development.OrdersService.command.OrderStatus;
+import com.development.OrdersService.core.models.OrderStatus;
+import com.development.OrdersService.core.models.OrderSummary;
+import com.development.OrdersService.query.FindOrderQuery;
 import jakarta.validation.Valid;
 import org.axonframework.commandhandling.gateway.CommandGateway;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.axonframework.messaging.responsetypes.ResponseTypes;
+import org.axonframework.queryhandling.QueryGateway;
+import org.axonframework.queryhandling.SubscriptionQueryResult;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -17,14 +21,15 @@ import java.util.UUID;
 public class OrdersCommandController {
 
     private final CommandGateway commandGateway;
+    private final QueryGateway queryGateway;
 
-    @Autowired
-    public OrdersCommandController(CommandGateway commandGateway) {
+    public OrdersCommandController(CommandGateway commandGateway, QueryGateway queryGateway) {
         this.commandGateway = commandGateway;
+        this.queryGateway = queryGateway;
     }
 
     @PostMapping
-    public String createOrder(@Valid @RequestBody CreateOrderRequest request) {
+    public OrderSummary createOrder(@Valid @RequestBody CreateOrderRequest request) {
 
         String userId = "27b95829-4f3f-4ddf-8983-151ba010e35b";
         String orderId = UUID.randomUUID().toString();
@@ -38,6 +43,11 @@ public class OrdersCommandController {
                 .orderStatus(OrderStatus.CREATED)
                 .build();
 
-        return commandGateway.sendAndWait(command);
+        try (SubscriptionQueryResult<OrderSummary, OrderSummary> result = queryGateway.subscriptionQuery(new FindOrderQuery(orderId),
+                ResponseTypes.instanceOf(OrderSummary.class),
+                ResponseTypes.instanceOf(OrderSummary.class))) {
+            commandGateway.sendAndWait(command);
+            return result.updates().blockFirst();
+        }
     }
 }

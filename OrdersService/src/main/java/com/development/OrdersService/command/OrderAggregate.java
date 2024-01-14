@@ -3,6 +3,7 @@ package com.development.OrdersService.command;
 import com.development.OrdersService.core.events.OrderApprovedEvent;
 import com.development.OrdersService.core.events.OrderCreatedEvent;
 import com.development.OrdersService.core.events.OrderRejectedEvent;
+import com.development.OrdersService.core.models.OrderStatus;
 import org.axonframework.commandhandling.CommandHandler;
 import org.axonframework.eventsourcing.EventSourcingHandler;
 import org.axonframework.modelling.command.AggregateIdentifier;

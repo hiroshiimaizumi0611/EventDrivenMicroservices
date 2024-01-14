@@ -5,6 +5,8 @@ import com.development.OrdersService.command.RejectOrderCommand;
 import com.development.OrdersService.core.events.OrderApprovedEvent;
 import com.development.OrdersService.core.events.OrderCreatedEvent;
 import com.development.OrdersService.core.events.OrderRejectedEvent;
+import com.development.OrdersService.core.models.OrderSummary;
+import com.development.OrdersService.query.FindOrderQuery;
 import com.development.core.commands.CancelProductReservationCommand;
 import com.development.core.commands.ProcessPaymentCommand;
 import com.development.core.commands.ReserveProductCommand;
@@ -24,9 +26,11 @@ import org.axonframework.modelling.saga.EndSaga;
 import org.axonframework.modelling.saga.SagaEventHandler;
 import org.axonframework.modelling.saga.StartSaga;
 import org.axonframework.queryhandling.QueryGateway;
+import org.axonframework.queryhandling.QueryUpdateEmitter;
 import org.axonframework.spring.stereotype.Saga;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.Nonnull;
 import java.time.Duration;
@@ -36,11 +40,14 @@ import java.util.UUID;
 @Saga
 public class OrderSaga {
 
-    private final transient CommandGateway commandGateway;
-
-    private final transient QueryGateway queryGateway;
-
-    private final transient DeadlineManager deadlineManager;
+    @Autowired
+    private transient CommandGateway commandGateway;
+    @Autowired
+    private transient QueryGateway queryGateway;
+    @Autowired
+    private transient DeadlineManager deadlineManager;
+    @Autowired
+    private transient QueryUpdateEmitter queryUpdateEmitter;
 
     private String scheduleId;
 
@@ -48,11 +55,16 @@ public class OrderSaga {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OrderSaga.class);
 
-    public OrderSaga(CommandGateway commandGateway, QueryGateway queryGateway, DeadlineManager deadlineManager) {
-        this.commandGateway = commandGateway;
-        this.queryGateway = queryGateway;
-        this.deadlineManager = deadlineManager;
-    }
+//    public OrderSaga() {
+//    }
+//
+//    @Autowired
+//    public OrderSaga(CommandGateway commandGateway, QueryGateway queryGateway, DeadlineManager deadlineManager, QueryUpdateEmitter queryUpdateEmitter) {
+//        this.commandGateway = commandGateway;
+//        this.queryGateway = queryGateway;
+//        this.deadlineManager = deadlineManager;
+//        this.queryUpdateEmitter = queryUpdateEmitter;
+//    }
 
     @StartSaga
     @SagaEventHandler(associationProperty = "orderId")
@@ -72,7 +84,8 @@ public class OrderSaga {
             @Override
             public void onResult(@Nonnull CommandMessage<? extends ReserveProductCommand> commandMessage, @Nonnull CommandResultMessage<?> commandResultMessage) {
                 if (commandResultMessage.isExceptional()) {
-                    // Start compensating transaction
+                    RejectOrderCommand command = new RejectOrderCommand(event.getOrderId(), commandResultMessage.exceptionResult().getMessage());
+                    commandGateway.send(command);
                 }
             }
         });
@@ -151,6 +164,7 @@ public class OrderSaga {
     @SagaEventHandler(associationProperty = "orderId")
     public void handle(OrderApprovedEvent event) {
         LOGGER.info("Order is approved. Order Saga is complete for orderId: " + event.getOrderId());
+        queryUpdateEmitter.emit(FindOrderQuery.class, query -> true, new OrderSummary(event.getOrderId(), event.getOrderStatus(), ""));
     }
 
     @SagaEventHandler(associationProperty = "orderId")
@@ -163,6 +177,7 @@ public class OrderSaga {
     @SagaEventHandler(associationProperty = "orderId")
     public void handle(OrderRejectedEvent event) {
         LOGGER.info("Successfully rejected order with id " + event.getOrderId());
+        queryUpdateEmitter.emit(FindOrderQuery.class, query -> true, new OrderSummary(event.getOrderId(), event.getOrderStatus(), event.getReason()));
     }
 
     @DeadlineHandler(deadlineName = PAYMENT_PROCESSING_TIMEOUT_DEADLINE)

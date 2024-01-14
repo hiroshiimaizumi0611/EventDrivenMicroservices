@@ -1,6 +1,6 @@
 package com.development.OrdersService.core.data;
 
-import com.development.OrdersService.command.OrderStatus;
+import com.development.OrdersService.core.models.OrderStatus;
 import jakarta.persistence.*;
 import lombok.Data;
 

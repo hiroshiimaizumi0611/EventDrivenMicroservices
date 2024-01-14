@@ -1,5 +1,6 @@
 package com.development.OrdersService.command;
 
+import com.development.OrdersService.core.models.OrderStatus;
 import lombok.Builder;
 import lombok.Data;
 import org.axonframework.modelling.command.TargetAggregateIdentifier;
