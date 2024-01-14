@@ -5,11 +5,13 @@ import com.development.OrdersService.core.data.OrdersRepository;
 import com.development.OrdersService.core.events.OrderApprovedEvent;
 import com.development.OrdersService.core.events.OrderCreatedEvent;
 import com.development.OrdersService.core.events.OrderRejectedEvent;
+import org.axonframework.config.ProcessingGroup;
 import org.axonframework.eventhandling.EventHandler;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Component;
 
 @Component
+@ProcessingGroup("order-group")
 public class OrderEventsHandler {
 
     private final OrdersRepository ordersRepository;
