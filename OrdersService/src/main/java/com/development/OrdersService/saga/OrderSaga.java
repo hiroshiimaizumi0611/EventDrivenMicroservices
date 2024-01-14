@@ -102,9 +102,7 @@ public class OrderSaga {
 
         LOGGER.info("Successfully fetched user payment details for user " + user.getFirstName());
 
-        scheduleId = deadlineManager.schedule(Duration.of(10, ChronoUnit.SECONDS), PAYMENT_PROCESSING_TIMEOUT_DEADLINE, user);
-
-        if (true) return;
+        scheduleId = deadlineManager.schedule(Duration.of(120, ChronoUnit.SECONDS), PAYMENT_PROCESSING_TIMEOUT_DEADLINE, user);
 
         ProcessPaymentCommand command = ProcessPaymentCommand.builder()
                 .orderId(event.getOrderId())
